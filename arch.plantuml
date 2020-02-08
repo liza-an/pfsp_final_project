@@ -1,0 +1,26 @@
+@startuml
+'title Template architecture
+
+component "Data Ingestion service" <<Dataset1>> as dataset1
+component "Enrichment service" <<Dataset2>> as dataset2
+
+frame "Kafka" {
+  () main_topic <<Topic>> as topic1
+  () enrichment_topic <<Topic>> as topic2
+  () enriched_topic <<Topic>> as topic3
+}
+
+dataset1 ..> topic1
+dataset2 ..> topic2
+
+component "Streaming application" <<KStreams>> as app
+
+topic1 ..> app
+topic2 ..> app
+
+app ..> topic3 : joined
+
+component "Regression model (optional)" <<ML model>> as model
+
+topic3 ...> model : serves
+@enduml
