@@ -74,6 +74,8 @@ lazy val solar_panel_emulator = (project in file("solar-panel-emulator"))
     name := "solar-panel-emulator",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
       // your additional dependencies go here
+      "io.spray" %% "spray-json" % "1.3.5"
+
     ),
     dockerSettings()
   )
@@ -84,6 +86,7 @@ lazy val weather_provider = (project in file("weather-provider"))
     name := "weather-provider",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
       // your additional dependencies go here
+      "io.spray" %% "spray-json" % "1.3.5"
     ),
     dockerSettings()
   )
