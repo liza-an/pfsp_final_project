@@ -19,9 +19,12 @@ val commonDependencies = Seq(
     exclude("javax.jms", "jms")
     exclude("com.sun.jdmk", "jmxtools")
     exclude("com.sun.jmx", "jmxri"),
-  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+//  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.slf4j" % "slf4j-log4j12" % "1.7.25",
-  "junit" % "junit" % "4.12" % Test
+  "junit" % "junit" % "4.12" % Test,
+  "com.typesafe.play" %% "play-json" % "2.8.1",
+  "io.spray" %% "spray-json" % "1.3.5"
+
 )
 
 val streamsDependencies = Seq(
@@ -34,8 +37,10 @@ val akkaDependencies = Seq (
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
-)
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
+  "com.typesafe.akka" %% "akka-http" % "10.1.8",
+  "com.typesafe.akka" %% "akka-http-testkit" % "10.1.8" % Test
+  )
 
 def dockerSettings(debugPort: Option[Int] = None) = Seq(
   dockerfile in docker := {
@@ -66,27 +71,37 @@ envFileName in ThisBuild := ".env"
 
 lazy val root = (project in file("."))
   .settings(name := "streaming-ucu-final-project")
-  .aggregate(solar_panel_emulator, weather_provider, streaming_app)
+  .aggregate(news_collector, streaming_app)
 
-lazy val solar_panel_emulator = (project in file("solar-panel-emulator"))
+lazy val news_collector = (project in file("news-collector"))
   .enablePlugins(sbtdocker.DockerPlugin)
   .settings(
-    name := "solar-panel-emulator",
+    name := "news-collector",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
       // your additional dependencies go here
-      "io.spray" %% "spray-json" % "1.3.5"
+    ),
+    dockerSettings()
+  )
+
+lazy val tesla_rates_collector = (project in file("tesla-rates-collector"))
+  .enablePlugins(sbtdocker.DockerPlugin)
+  .settings(
+    name := "tesla-rates-collector",
+    libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
+      // your additional dependencies go here
+
 
     ),
     dockerSettings()
   )
 
-lazy val weather_provider = (project in file("weather-provider"))
+lazy val musk_twitts_collector = (project in file("musk-twitts-collector"))
   .enablePlugins(sbtdocker.DockerPlugin)
   .settings(
-    name := "weather-provider",
+    name := "musk-twitts-collector",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
       // your additional dependencies go here
-      "io.spray" %% "spray-json" % "1.3.5"
+
     ),
     dockerSettings()
   )
@@ -99,5 +114,5 @@ lazy val streaming_app = (project in file("streaming-app"))
       // your additional dependencies go here
     ),
     dockerSettings(),
-    mainClass in assembly := Some("ua.ucu.edu.DummyStreamingApp")
+//    mainClass in assembly := Some("ua.ucu.edu.DummyStreamingApp")
   )

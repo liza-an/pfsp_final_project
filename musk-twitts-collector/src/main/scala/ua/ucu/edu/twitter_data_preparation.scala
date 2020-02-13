@@ -1,15 +1,9 @@
 package ua.ucu.edu
 
-// For date formatting
 import java.text.SimpleDateFormat
 import java.util.Date
 
-// For break and continue
-import util.control.Breaks._
-
-// For json parsing
-import spray.json._
-import DefaultJsonProtocol._
+import scala.util.control.Breaks.{break, breakable}
 
 object twitter_data_preparation extends App {
 
