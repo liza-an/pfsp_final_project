@@ -4,7 +4,9 @@ import java.nio.charset.StandardCharsets
 import java.util.{Date, Properties}
 
 import akka.actor.{Actor, Props}
+//import kafka.utils.Json
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import spray.json.JsValue
 //import ua.ucu.edu.Main.{ActorRequest, tickActor}
 //import ua.ucu.edu.kafka.DummyDataProducer.logger
 
@@ -22,7 +24,7 @@ import akka.stream.ActorMaterializer
 
 import play.api.libs.json._
 
-import java.text.DateFormat
+//import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 //TODO dates
@@ -40,20 +42,22 @@ object Main extends App {
 
     class NewsActor extends Actor {
 
-      def getYesterdayNewsByCurrentDate(current_date: Date): Future[HttpResponse] = {
+//      news created after date
+      def geNewsByDate(date: Date): Future[HttpResponse] = {
 
         val formatter = new SimpleDateFormat("dd/MM/yyyy")
-        val todayWithZeroTime = formatter.parse(formatter.format(current_date))
+        val dayWithZeroTime = formatter.parse(formatter.format(date))
 
-        val today_timestamp = todayWithZeroTime.getTime()/1000
-        val yesterday_timestamp = today_timestamp - 24*60*60
+        val date_timestamp = dayWithZeroTime.getTime()/1000
+//        val yesterday_timestamp = today_timestamp - 24*60*60
 
-        val endpoint = Uri(s"https://hn.algolia.com/api/v1/search_by_date?query=Tesla&tags=story&numericFilters=created_at_i>=${yesterday_timestamp},created_at_i<${today_timestamp}")
+        val endpoint = Uri(s"https://hn.algolia.com/api/v1/search_by_date?query=Tesla&tags=story&numericFilters=created_at_i>=${date_timestamp}")
         Http().singleRequest(HttpRequest(uri = endpoint))
       }
 
       def processNews(input_data: String): Seq[String] = {
-        val json: JsValue = Json.parse(input_data)
+        val json = Json.parse(input_data)
+        print(json)
         val hits = json  \\ "title"
         //          take every second element of hits
         hits.zipWithIndex
@@ -76,12 +80,11 @@ object Main extends App {
 
       def receive = {
         case date: Date => {
-          getYesterdayNewsByCurrentDate(date)
+          geNewsByDate(date)
             .flatMap(res => res.entity.toStrict(5.seconds))
             .andThen {
               case Success(entity) => {
                 val res_titles = processNews(entity.data.decodeString(StandardCharsets.UTF_8))
-//                println(entity)
                 res_titles.foreach(title => {
                   val data = new ProducerRecord[String, String](Topic, title)
                   producer.send(data)
@@ -99,14 +102,26 @@ object Main extends App {
       }
     }
 
+  //  for test
   def get_current_date() : Date = {
-    new Date()
+    import java.text.SimpleDateFormat
+
+    val input = "Wed Feb 02 00:00:00 EET 2019"
+    val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
+    val date = parser.parse(input)
+
+    val formatter = new SimpleDateFormat("dd/MM/yyyy")
+    formatter.parse(formatter.format(date))
+  }
+
+  def get_yesterday_date(): Date = {
+    new Date( get_current_date().getTime() - 24*60*60*1000 )
   }
 
 //  val day_duration = System.getenv("DAY_DURATION_SECONDS").toInt
-  
+
   val newsActor = system.actorOf(Props[NewsActor], "news-actor")
 
-  system.scheduler.schedule(Duration.Zero, 1 minute, newsActor, get_current_date())
+  system.scheduler.schedule(Duration.Zero, 1 minute, newsActor, get_yesterday_date())
 
 }
