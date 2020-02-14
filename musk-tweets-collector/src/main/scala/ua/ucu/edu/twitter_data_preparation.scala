@@ -55,7 +55,7 @@ object twitter_data_preparation {
 //        musk_twitter_records_processed = musk_twitter_records_processed :+ TwitterRecordProcessed(date_changed_type, twitter_record.time, tweet_filtered, bag_of_words)
     }
 
-    def getTweetByDate(date: Date): String = musk_twitter_records_processed.get(date).getOrElse("")
+    def getTweetByDate(date: Date): Option[String] = musk_twitter_records_processed.get(date)
 
 //    musk_twitter_records_processed.keys.foreach{
 //        date =>

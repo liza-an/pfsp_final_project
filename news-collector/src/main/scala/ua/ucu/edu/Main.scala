@@ -1,7 +1,7 @@
 package ua.ucu.edu
 
 import java.nio.charset.StandardCharsets
-import java.util.Properties
+import java.util.{Date, Properties}
 
 import akka.actor.{Actor, Props}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
@@ -22,9 +22,11 @@ import akka.stream.ActorMaterializer
 
 import play.api.libs.json._
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+
 //TODO dates
 //TODO add logs
-//TODO data preprocessing
 
 object Main extends App {
 
@@ -38,13 +40,15 @@ object Main extends App {
 
     class NewsActor extends Actor {
 
-//      implicit val system = akka.actor.ActorSystem()
-//      implicit val executionContext = system.dispatcher
-//      implicit val materializer = ActorMaterializer()
+      def getYesterdayNewsByCurrentDate(current_date: Date): Future[HttpResponse] = {
 
-      def getNewsByDate(date: DateTime): Future[HttpResponse] = {
-        val yesterday = Instant.now.getEpochSecond()
-        val endpoint = Uri(s"https://hn.algolia.com/api/v1/search_by_date?query=Tesla&tags=story&numericFilters=created_at_i<${yesterday}")
+        val formatter = new SimpleDateFormat("dd/MM/yyyy")
+        val todayWithZeroTime = formatter.parse(formatter.format(current_date))
+
+        val today_timestamp = todayWithZeroTime.getTime()/1000
+        val yesterday_timestamp = today_timestamp - 24*60*60
+
+        val endpoint = Uri(s"https://hn.algolia.com/api/v1/search_by_date?query=Tesla&tags=story&numericFilters=created_at_i>=${yesterday_timestamp},created_at_i<${today_timestamp}")
         Http().singleRequest(HttpRequest(uri = endpoint))
       }
 
@@ -71,16 +75,16 @@ object Main extends App {
       val producer = new KafkaProducer[String, String](props)
 
       def receive = {
-        case date: DateTime => {
-          getNewsByDate(date)
+        case date: Date => {
+          getYesterdayNewsByCurrentDate(date)
             .flatMap(res => res.entity.toStrict(5.seconds))
             .andThen {
               case Success(entity) => {
                 val res_titles = processNews(entity.data.decodeString(StandardCharsets.UTF_8))
+//                println(entity)
                 res_titles.foreach(title => {
                   val data = new ProducerRecord[String, String](Topic, title)
                   producer.send(data)
-                  println(DateTime.now)
                 })
               }
               case Failure(e) => println("something went wrong: " + e)
@@ -95,9 +99,14 @@ object Main extends App {
       }
     }
 
+  def get_current_date() : Date = {
+    new Date()
+  }
 
+//  val day_duration = System.getenv("DAY_DURATION_SECONDS").toInt
+  
   val newsActor = system.actorOf(Props[NewsActor], "news-actor")
 
-  system.scheduler.schedule(Duration.Zero, 1 minute, newsActor, DateTime.now)
+  system.scheduler.schedule(Duration.Zero, 1 minute, newsActor, get_current_date())
 
 }

@@ -8,7 +8,7 @@ import java.util.Date
 import spray.json._
 import DefaultJsonProtocol._
 
-object stocks_data_preparation extends App {
+object stocks_data_preparation {
 
   // Change to your path
   val path_to_stocks_json = "tesla_stocks_final.json"
@@ -39,16 +39,30 @@ object stocks_data_preparation extends App {
     tesla_stocks_processed += date_changed_type -> tesla_stock_record.open
   }
 
-  def getStocksByDate(date: Date): Float = tesla_stocks_processed(date)
+  def getStocksByDate(date: Date): Option[Float] = tesla_stocks_processed.get(date)
 
   // Unprint if u want to test
 
-  tesla_stocks_processed.keys.foreach{
-    date =>
-      println("Date: %s - Open: %s"
-        .format(
-          new SimpleDateFormat(dateFormat).format(date),
-          getStocksByDate(date))
-      )
-  }
+//  tesla_stocks_processed.keys.foreach{
+//    date =>
+//      println("Date: %s - Open: %s"
+//        .format(
+//          new SimpleDateFormat(dateFormat).format(date),
+//          getStocksByDate(date))
+//      )
+//  }
+
+
+//  import java.text.SimpleDateFormat
+//
+//  val input = "Mon Dec 31 00:00:00 EET 2008"
+//  val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
+//  val date = parser.parse(input)
+//
+//  val formatter = new SimpleDateFormat("dd/MM/yyyy")
+//  val date_ = formatter.parse(formatter.format(date))
+//
+//  println(date_)
+//  println(getStocksByDate(date_))
+
 }
