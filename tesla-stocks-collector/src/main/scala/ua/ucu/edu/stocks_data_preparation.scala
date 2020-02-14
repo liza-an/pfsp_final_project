@@ -4,6 +4,8 @@ package ua.ucu.edu
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import scala.io.BufferedSource
+
 // For json parsing
 import spray.json._
 import DefaultJsonProtocol._
@@ -13,9 +15,9 @@ object stocks_data_preparation {
   // Change to your path
   val path_to_stocks_json = "tesla_stocks_final.json"
 
-  val stocks_json = scala.io.Source.fromResource(path_to_stocks_json)
-  val stocks_json_str = try stocks_json.mkString finally stocks_json.close()
-  var stocks_array = stocks_json_str.stripMargin.parseJson
+  val stocks_json: BufferedSource = scala.io.Source.fromResource(path_to_stocks_json)
+  val stocks_json_str: String = try stocks_json.mkString finally stocks_json.close()
+  var stocks_array: JsValue = stocks_json_str.stripMargin.parseJson
 
   private val dateFormat = "yyyy-MM-dd"
 
