@@ -4,6 +4,8 @@ package ua.ucu.edu
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import scala.io.BufferedSource
+
 // For break and continue
 import util.control.Breaks._
 
@@ -16,9 +18,9 @@ object twitter_data_preparation {
     // Change to your path
     val path_to_tweets_json = "tweets_final.json"
 
-    val tweets_json = scala.io.Source.fromResource(path_to_tweets_json)
-    val tweets_json_str = try tweets_json.mkString finally tweets_json.close()
-    var tweets_array = tweets_json_str.stripMargin.parseJson
+    val tweets_json: BufferedSource = scala.io.Source.fromResource(path_to_tweets_json)
+    val tweets_json_str: String = try tweets_json.mkString finally tweets_json.close()
+    var tweets_array: JsValue = tweets_json_str.stripMargin.parseJson
 
     private val dateFormat = "dd-MM-yyyy"
 
