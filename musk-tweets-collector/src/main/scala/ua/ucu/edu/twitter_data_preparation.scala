@@ -11,7 +11,7 @@ import util.control.Breaks._
 import spray.json._
 import DefaultJsonProtocol._
 
-object twitter_data_preparation extends App {
+object twitter_data_preparation {
 
     // Change to your path
     val path_to_tweets_json = "tweets_final.json"
@@ -55,14 +55,16 @@ object twitter_data_preparation extends App {
 //        musk_twitter_records_processed = musk_twitter_records_processed :+ TwitterRecordProcessed(date_changed_type, twitter_record.time, tweet_filtered, bag_of_words)
     }
 
-    def getTweetByDate(date: Date): String = musk_twitter_records_processed(date)
+    def getTweetByDate(date: Date): String = musk_twitter_records_processed.get(date).getOrElse("")
 
-    musk_twitter_records_processed.keys.foreach{
-        date =>
-            println("Date: %s - Tweet: %s"
-              .format(
-                  new SimpleDateFormat(dateFormat).format(date),
-                  getTweetByDate(date))
-            )
-    }
+//    musk_twitter_records_processed.keys.foreach{
+//        date =>
+//        println(date)
+//            println("Date: %s - Tweet: %s"
+//              .format(
+//                  new SimpleDateFormat(dateFormat).format(date),
+//                  getTweetByDate(date))
+//            )
+//    }
+
 }
