@@ -6,7 +6,7 @@ import java.util.{Date, Properties}
 import akka.actor.{Actor, Props}
 //import kafka.utils.Json
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import spray.json.JsValue
+//import spray.json.JsValue
 //import ua.ucu.edu.Main.{ActorRequest, tickActor}
 //import ua.ucu.edu.kafka.DummyDataProducer.logger
 
@@ -23,6 +23,7 @@ import java.time.Instant
 import akka.stream.ActorMaterializer
 
 import play.api.libs.json._
+//import play.libs.Json
 
 //import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -42,13 +43,16 @@ object Main extends App {
 
     class NewsActor extends Actor {
 
+      case class NewsRecord(created_at: Date, title: String)
+
 //      news created after date
       def geNewsByDate(date: Date): Future[HttpResponse] = {
 
         val formatter = new SimpleDateFormat("dd/MM/yyyy")
-        val dayWithZeroTime = formatter.parse(formatter.format(date))
+//        val dayWithZeroTime = formatter.parse(formatter.format(date))
 
-        val date_timestamp = dayWithZeroTime.getTime()/1000
+//        val date_timestamp = dayWithZeroTime.getTime()/1000
+        val date_timestamp = 1547251200
 //        val yesterday_timestamp = today_timestamp - 24*60*60
 
         val endpoint = Uri(s"https://hn.algolia.com/api/v1/search_by_date?query=Tesla&tags=story&numericFilters=created_at_i>=${date_timestamp}")
@@ -57,7 +61,6 @@ object Main extends App {
 
       def processNews(input_data: String): Seq[String] = {
         val json = Json.parse(input_data)
-        print(json)
         val hits = json  \\ "title"
         //          take every second element of hits
         hits.zipWithIndex
@@ -66,9 +69,9 @@ object Main extends App {
       }
 
       //  TODO: replace!!
-      //  val BrokerList: String = System.getenv(Config.KafkaBrokers)
+        val BrokerList: String = System.getenv(Config.KafkaBrokers)
       //  for test
-      val BrokerList: String = "localhost:9092"
+//      val BrokerList: String = "localhost:9092"
       val Topic = "news-data"
       val props = new Properties()
       props.put("bootstrap.servers", BrokerList)
@@ -88,6 +91,7 @@ object Main extends App {
                 res_titles.foreach(title => {
                   val data = new ProducerRecord[String, String](Topic, title)
                   producer.send(data)
+                  println("message is sent")
                 })
               }
               case Failure(e) => println("something went wrong: " + e)
@@ -118,10 +122,11 @@ object Main extends App {
     new Date( get_current_date().getTime() - 24*60*60*1000 )
   }
 
-//  val day_duration = System.getenv("DAY_DURATION_SECONDS").toInt
+  //TODO read from the confug file
+  val day_duration = 60
 
   val newsActor = system.actorOf(Props[NewsActor], "news-actor")
 
-  system.scheduler.schedule(Duration.Zero, 1 minute, newsActor, get_yesterday_date())
+  system.scheduler.schedule(Duration.Zero, day_duration seconds, newsActor, get_yesterday_date())
 
 }

@@ -19,9 +19,9 @@ object Main extends App {
   class StocksActor extends Actor {
 
     //  TODO: replace!!
-    //  val BrokerList: String = System.getenv("KAFKA_BROKERS")
+      val BrokerList: String = System.getenv("KAFKA_BROKERS")
     //  for test
-    val BrokerList: String = "localhost:9092"
+//    val BrokerList: String = "localhost:9092"
     val Topic = "stocks-data"
     val props = new Properties()
     props.put("bootstrap.servers", BrokerList)
@@ -33,9 +33,11 @@ object Main extends App {
 
     def receive = {
       case date: Date => {
-        val twitter_data = stocks_data_preparation.getStocksByDate(date).getOrElse("").toString
-        val prod_rec = new ProducerRecord[String, String](Topic, twitter_data)
+        val stocks_data = stocks_data_preparation.getStocksByDate(date).getOrElse("").toString
+//        val prod_rec = new ProducerRecord[String, String](Topic, stocks_data)
+        val prod_rec = new ProducerRecord[String, String](Topic, s"${date} - ${stocks_data}")
         producer.send(prod_rec)
+        println("message is sent")
       }
     }
 
@@ -48,16 +50,25 @@ object Main extends App {
   def get_current_date() : Date = {
     import java.text.SimpleDateFormat
 
+    val input = "Wed Feb 02 00:00:00 EET 2019"
+    val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
+    val date = parser.parse(input)
+
     val formatter = new SimpleDateFormat("dd/MM/yyyy")
-    formatter.parse(formatter.format(new Date()))
+    formatter.parse(formatter.format(date))
   }
 
   def get_yesterday_date(): Date = {
     new Date( get_current_date().getTime() -24*60*60*1000 )
   }
 
-  val stocksActor = system.actorOf(Props[StocksActor], "stocks-actor")
+  //TODO read from the confug file
+  val day_duration_seconds = 60
 
-  system.scheduler.schedule(Duration.Zero, 1 minutes, stocksActor, get_yesterday_date())
+
+  val stocksActor = system.actorOf(Props[StocksActor], "stocks-actor")
+//  println("stocks-actor")
+
+  system.scheduler.schedule(Duration.Zero, day_duration_seconds seconds, stocksActor, get_yesterday_date())
 
 }

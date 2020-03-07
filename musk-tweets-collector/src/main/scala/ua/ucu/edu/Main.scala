@@ -6,6 +6,7 @@ import java.util.{Date, Properties}
 import akka.actor.{Actor, Props}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import akka.stream.ActorMaterializer
+import ua.ucu.edu.twitter_data_preparation.TwitterRecord
 
 //TODO dates
 //TODO add logs
@@ -19,9 +20,9 @@ object Main extends App {
   class TwitterActor extends Actor {
 
     //  TODO: replace!!
-    //  val BrokerList: String = System.getenv("KAFKA_BROKERS")
+    val BrokerList: String = System.getenv("KAFKA_BROKERS")
     //  for test
-    val BrokerList: String = "localhost:9092"
+//    val BrokerList: String = "localhost:9092"
     val Topic = "twitter-data"
     val props = new Properties()
     props.put("bootstrap.servers", BrokerList)
@@ -34,8 +35,11 @@ object Main extends App {
     def receive = {
       case date: Date => {
         val twitter_data = twitter_data_preparation.getTweetByDate(date).getOrElse("")
-        val prod_rec = new ProducerRecord[String, String](Topic, twitter_data)
+//        TwitterRecord
+        val prod_rec = new ProducerRecord[String, String](Topic, s"${date} - ${twitter_data}")
+
         producer.send(prod_rec)
+        println("message is sent")
       }
     }
 
@@ -45,19 +49,45 @@ object Main extends App {
   }
 
 //  for test
+//  def update_date() : Date = {
+//    get_start_date()
+//  }
+
+  def get_start_date(): Date = {
+    import java.text.SimpleDateFormat
+
+    val current_date = System.getenv("START_DATE")
+    val parser = new SimpleDateFormat("MM/dd/yyyy")
+    val date = parser.parse(current_date)
+
+    date
+  }
+
+  //  for test
   def get_current_date() : Date = {
     import java.text.SimpleDateFormat
 
+    val input = "Wed Feb 02 00:00:00 EET 2019"
+    val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
+    val date = parser.parse(input)
+
     val formatter = new SimpleDateFormat("dd/MM/yyyy")
-    formatter.parse(formatter.format(new Date()))
+    formatter.parse(formatter.format(date))
   }
 
   def get_yesterday_date(): Date = {
-    new Date( get_current_date().getTime() -24*60*60*1000 )
+    new Date( get_current_date().getTime() - 24*60*60*1000 )
   }
 
   val twitterActor = system.actorOf(Props[TwitterActor], "twitter-actor")
 
-  system.scheduler.schedule(Duration.Zero, 1 minutes, twitterActor, get_yesterday_date())
+  println("twitter-actor")
+
+//TODO read from the confug file
+  val day_duration = 60
+
+//  val current_date = get_start_date()
+
+  system.scheduler.schedule(Duration.Zero, day_duration seconds, twitterActor, get_yesterday_date())
 
 }
