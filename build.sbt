@@ -11,10 +11,7 @@ ThisBuild / scalaVersion := "2.12.8"
 //    oldStrategy(x)
 //}
 
-//assemblyMergeStrategy in assembly := {
-//  case PathList("jackson-core", "bundles", xs @ _*) => MergeStrategy.first
-//  case x => MergeStrategy.first
-//}
+
 
 // These options will be used for *all* versions.
 ThisBuild / scalacOptions ++= Seq(
@@ -88,16 +85,33 @@ envFileName in ThisBuild := ".env"
 
 lazy val root = (project in file("."))
   .settings(name := "streaming-ucu-final-project")
-  .aggregate(news_collector, tesla_stocks_collector, streaming_app)
+  .aggregate(news_collector, tesla_stocks_collector, musk_tweets_collector, streaming_app)
 
 lazy val news_collector = (project in file("news-collector"))
   .enablePlugins(sbtdocker.DockerPlugin)
   .settings(
     name := "news-collector",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
-      "com.typesafe.play" %% "play-json" % "2.8.0-M7" % "provided"
+      "com.typesafe.play" %% "play-json" % "2.8.0"
+//        exclude("com.fasterxml.jackson.core", "jackson-databind")
+//        exclude("com.fasterxml.jackson.core", "jackson-datatype-jsr310")
+//        exclude("com.fasterxml.jackson.core", "jackson-core")
+//        exclude("com.fasterxml.jackson.core", "jackson-annotations")
+//        exclude("com.fasterxml.jackson.datatype", "jackson-datatype-jdk8")
       // your additional dependencies go here
     ),
+    assemblyMergeStrategy in assembly := {
+      case x if x.endsWith("module-info.class")  => MergeStrategy.discard
+      case PathList("META-INF", xs @ _*) =>
+        (xs map {_.toLowerCase}) match {
+          case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) => MergeStrategy.discard
+          case _ => MergeStrategy.last
+        }
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+//      case x => MergeStrategy.first
+    },
     dockerSettings()
   )
 
@@ -110,6 +124,10 @@ lazy val tesla_stocks_collector = (project in file("tesla-stocks-collector"))
 
 
     ),
+//    assemblyMergeStrategy in assembly := {
+//      case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.first
+//      case x => MergeStrategy.first
+//    },
     dockerSettings()
   )
 
