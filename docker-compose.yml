@@ -32,8 +32,9 @@ services:
       KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
       KAFKA_TOOLS_LOG4J_LOGLEVEL: ERROR
 
-  tesla-rates-collector:
-    image: ${REGISTRY_URI}/ucu-class/solar-panel-emulator:${STUDENT_NAME}-0.1
+  tesla-stocks-collector:
+    user: root
+    image: ${REGISTRY_URI}/ucu-class/tesla-stocks-collector:${STUDENT_NAME}-0.1
     depends_on:
       - kafka
     environment:
@@ -41,15 +42,17 @@ services:
       ZK_CONNECT: zookeeper:2181
 
   news-collector:
-    image: ${REGISTRY_URI}/ucu-class/weather-provider:${STUDENT_NAME}-0.1
+    user: root
+    image: ${REGISTRY_URI}/ucu-class/news-collector:${STUDENT_NAME}-0.1
     depends_on:
       - kafka
     environment:
       KAFKA_BROKERS: kafka:9092
       ZK_CONNECT: zookeeper:2181
 
-  musk-twitts-collector:
-    image: ${REGISTRY_URI}/ucu-class/weather-provider:${STUDENT_NAME}-0.1
+  musk-tweets-collector:
+    user: root
+    image: ${REGISTRY_URI}/ucu-class/musk-tweets-collector:${STUDENT_NAME}-0.1
     depends_on:
       - kafka
     environment:
