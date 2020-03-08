@@ -10,3 +10,4 @@ services:
         awslogs-group: streaming-ucu
         awslogs-region: us-east-1
         awslogs-stream-prefix: $STUDENT_NAME
+

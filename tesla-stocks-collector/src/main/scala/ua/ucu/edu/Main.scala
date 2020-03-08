@@ -2,12 +2,12 @@ package ua.ucu.edu
 
 import java.time.{LocalDate, ZoneId}
 
-import scala.concurrent.duration._
 import java.util.{Date, Properties}
 
 import akka.actor.{Actor, Props}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
 import org.slf4j.{Logger, LoggerFactory}
 //import ua.ucu.edu.Main.{day_duration, newsActor}
 
@@ -63,17 +63,19 @@ object Main extends App {
   }
 
   def get_start_date() : LocalDate = {
-    LocalDate.parse("2019-02-02")
+    val start_date = ConfigFactory.load().getString("team.secret.start_date")
+    LocalDate.parse(start_date)
   }
 
   def get_end_date() : LocalDate = {
-    LocalDate.parse("2019-02-22")
+    val start_date = ConfigFactory.load().getString("team.secret.end_date")
+    LocalDate.parse(start_date)
   }
 
   val start_date = get_start_date()
   val end_date = get_end_date()
 
-  val day_duration = 20
+  val day_duration = ConfigFactory.load().getString("team.secret.day_duration").toInt
 
   Thread.sleep(30000);
   for (i<-dates(start_date).takeWhile(_.isBefore(end_date)).toList){

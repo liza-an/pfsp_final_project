@@ -53,18 +53,4 @@ object stocks_data_preparation {
 //          getStocksByDate(date))
 //      )
 //  }
-
-
-//  import java.text.SimpleDateFormat
-//
-//  val input = "Mon Dec 31 00:00:00 EET 2008"
-//  val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
-//  val date = parser.parse(input)
-//
-//  val formatter = new SimpleDateFormat("dd/MM/yyyy")
-//  val date_ = formatter.parse(formatter.format(date))
-//
-//  println(date_)
-//  println(getStocksByDate(date_))
-
 }

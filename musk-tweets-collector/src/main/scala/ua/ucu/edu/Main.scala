@@ -9,6 +9,8 @@ import akka.stream.ActorMaterializer
 import org.slf4j.{Logger, LoggerFactory}
 import java.time.{LocalDate, ZoneId}
 
+import com.typesafe.config.ConfigFactory
+
 
 object Main extends App {
 
@@ -49,18 +51,19 @@ object Main extends App {
   }
 
   def get_start_date() : LocalDate = {
-    LocalDate.parse("2019-02-02")
+    val start_date = ConfigFactory.load().getString("team.secret.start_date")
+    LocalDate.parse(start_date)
   }
 
   def get_end_date() : LocalDate = {
-    LocalDate.parse("2019-02-22")
+    val start_date = ConfigFactory.load().getString("team.secret.end_date")
+    LocalDate.parse(start_date)
   }
 
 
   val twitterActor = system.actorOf(Props[TwitterActor], "twitter-actor")
 
-//TODO read from the confug file
-  val day_duration = 20
+  val day_duration = ConfigFactory.load().getString("team.secret.day_duration").toInt
 
   val start_date = get_start_date()
   val end_date = get_end_date()

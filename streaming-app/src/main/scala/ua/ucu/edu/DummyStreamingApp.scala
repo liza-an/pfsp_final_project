@@ -1,15 +1,13 @@
 package ua.ucu.edu
 
-import java.util.{Date, Properties}
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 
-import org.apache.kafka.streams.kstream.{JoinWindows, KStream}
+import org.apache.kafka.streams.kstream.JoinWindows
 import org.apache.kafka.streams.scala.ImplicitConversions._
 import org.apache.kafka.streams.scala._
 import org.apache.kafka.streams.{KafkaStreams, StreamsConfig}
 import org.slf4j.LoggerFactory
-
-import scala.concurrent.duration.Duration
 
 object DummyStreamingApp extends App {
 
@@ -37,8 +35,6 @@ object DummyStreamingApp extends App {
   def text_processing(text:String):String ={
       val text_filtered = text
         .replaceAll("""[.!?\\/;,—\-_():]""", "")
-
-        // TODO Improve stripping extra whitespaces
         .replaceAll("""(?m)\s+$""", "")
         .toLowerCase
 
@@ -48,17 +44,19 @@ object DummyStreamingApp extends App {
     bag_of_words.toString()
   }
 
+  val window_time = 20000
+
 
   val resultStream = tweetsStream.join(newsStream)(
     ((tweet_text, news_text) => {
       text_processing(tweet_text + news_text)
     }),
-    JoinWindows.of(20000)
+    JoinWindows.of(window_time)
   ).join(stocksStream)(
     ((news_tweets, stock) => {
       s"bag of words: $news_tweets; stock: $stock"
     }),
-    JoinWindows.of(20000)
+    JoinWindows.of(window_time)
   )
 
   resultStream.foreach { (k, v) =>

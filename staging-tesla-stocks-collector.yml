@@ -1,6 +1,6 @@
 version: '2'
 services:
-  solar-panel-app:
+  tesla-stocks-collector:
     image: $REGISTRY_URI/ucu-class/tesla-stocks-collector:$STUDENT_NAME-0.1
     environment:
       - KAFKA_BROKERS=$KAFKA_BROKERS # workaround ecs env limitation
@@ -10,3 +10,4 @@ services:
         awslogs-group: streaming-ucu
         awslogs-region: us-east-1
         awslogs-stream-prefix: $STUDENT_NAME
+

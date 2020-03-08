@@ -1,6 +1,6 @@
 version: '2'
 services:
-  weather-provider:
+  musk-tweets-collector:
     image: $REGISTRY_URI/ucu-class/musk-tweets-collector:$STUDENT_NAME-0.1
     environment:
       - KAFKA_BROKERS=$KAFKA_BROKERS # workaround ecs env limitation

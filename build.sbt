@@ -4,15 +4,6 @@ ThisBuild / version := "0.1"
 
 ThisBuild / scalaVersion := "2.12.8"
 
-//assemblyMergeStrategy in assembly := {
-//  case x if x.endsWith("module-info.class") => MergeStrategy.discard
-//  case x =>
-//    val oldStrategy = (assemblyMergeStrategy in assembly).value
-//    oldStrategy(x)
-//}
-
-
-
 // These options will be used for *all* versions.
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation",
@@ -65,7 +56,6 @@ def dockerSettings(debugPort: Option[Int] = None) = Seq(
       copy(scriptSourceDir, projectDir)
       run("chmod", "+x", s"/project/start.sh")
       entryPoint(s"/project/start.sh")
-//      cmd(s"java -jar Users/lizabykhanova/pfsp_final_project/streaming-app/target/scala-2.12/${name.value}-assembly-0.1.jar")
       cmd(projectDir, s"${name.value}", s"${version.value}")
     }
   },
@@ -93,12 +83,6 @@ lazy val news_collector = (project in file("news-collector"))
     name := "news-collector",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
       "com.typesafe.play" %% "play-json" % "2.8.0"
-//        exclude("com.fasterxml.jackson.core", "jackson-databind")
-//        exclude("com.fasterxml.jackson.core", "jackson-datatype-jsr310")
-//        exclude("com.fasterxml.jackson.core", "jackson-core")
-//        exclude("com.fasterxml.jackson.core", "jackson-annotations")
-//        exclude("com.fasterxml.jackson.datatype", "jackson-datatype-jdk8")
-      // your additional dependencies go here
     ),
     assemblyMergeStrategy in assembly := {
       case x if x.endsWith("module-info.class")  => MergeStrategy.discard
@@ -110,7 +94,6 @@ lazy val news_collector = (project in file("news-collector"))
       case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
-//      case x => MergeStrategy.first
     },
     dockerSettings()
   )
@@ -120,14 +103,7 @@ lazy val tesla_stocks_collector = (project in file("tesla-stocks-collector"))
   .settings(
     name := "tesla-stocks-collector",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
-      // your additional dependencies go here
-
-
     ),
-//    assemblyMergeStrategy in assembly := {
-//      case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.first
-//      case x => MergeStrategy.first
-//    },
     dockerSettings()
   )
 
@@ -136,8 +112,6 @@ lazy val musk_tweets_collector = (project in file("musk-tweets-collector"))
   .settings(
     name := "musk-tweets-collector",
     libraryDependencies ++= commonDependencies ++ akkaDependencies ++ Seq(
-      // your additional dependencies go here
-
     ),
     dockerSettings()
   )
@@ -147,7 +121,6 @@ lazy val streaming_app = (project in file("streaming-app"))
   .settings(
     name := "streaming-app",
     libraryDependencies ++= commonDependencies ++ streamsDependencies ++ Seq(
-      // your additional dependencies go here
     ),
     dockerSettings(),
     //    mainClass in assembly := Some("ua.ucu.edu.DummyStreamingApp")

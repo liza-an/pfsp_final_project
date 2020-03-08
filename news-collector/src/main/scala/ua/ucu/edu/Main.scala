@@ -14,7 +14,6 @@ import akka.http.scaladsl.model._
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import java.time.Instant
 
 import akka.stream.ActorMaterializer
 
@@ -22,6 +21,8 @@ import play.api.libs.json._
 
 import java.text.SimpleDateFormat
 import org.slf4j.{Logger, LoggerFactory}
+
+import com.typesafe.config.ConfigFactory
 
 object Main extends App {
 
@@ -120,23 +121,22 @@ object Main extends App {
     new Date( get_current_date().getTime() - 24*60*60*1000 )
   }
 
-  //TODO read from the confug file
-  val day_duration = 20
+  val day_duration = ConfigFactory.load().getString("team.secret.day_duration").toInt
 
   val newsActor = system.actorOf(Props[NewsActor], "news-actor")
-
-//  system.scheduler.schedule(Duration.Zero, day_duration seconds, newsActor, get_yesterday_date())
 
   def dates(fromDate: LocalDate): Stream[LocalDate] = {
     fromDate #:: dates(fromDate plusDays 1 )
   }
 
   def get_start_date() : LocalDate = {
-    LocalDate.parse("2019-02-02")
+    val start_date = ConfigFactory.load().getString("team.secret.start_date")
+    LocalDate.parse(start_date)
   }
 
   def get_end_date() : LocalDate = {
-    LocalDate.parse("2019-02-22")
+    val start_date = ConfigFactory.load().getString("team.secret.end_date")
+    LocalDate.parse(start_date)
   }
 
   val start_date = get_start_date()

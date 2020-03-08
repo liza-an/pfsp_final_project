@@ -6,9 +6,6 @@ import java.util.Date
 
 import scala.io.BufferedSource
 
-// For break and continue
-import util.control.Breaks._
-
 // For json parsing
 import spray.json._
 import DefaultJsonProtocol._
@@ -47,7 +44,6 @@ object twitter_data_preparation {
 //        val tweet_filtered = twitter_record.tweet
 //          .replaceAll("""[.!?\\/;,—\-_():]""", "")
 //
-//          // TODO Improve stripping extra whitespaces
 //          .replaceAll("""(?m)\s+$""", "")
 //          .toLowerCase
 
