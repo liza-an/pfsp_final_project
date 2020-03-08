@@ -1,15 +1,14 @@
 package ua.ucu.edu
 
-import scala.concurrent.duration._
+
 import java.util.{Date, Properties}
 
 import akka.actor.{Actor, Props}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import akka.stream.ActorMaterializer
-import ua.ucu.edu.twitter_data_preparation.TwitterRecord
+import org.slf4j.{Logger, LoggerFactory}
+import java.time.{LocalDate, ZoneId}
 
-//TODO dates
-//TODO add logs
 
 object Main extends App {
 
@@ -17,9 +16,10 @@ object Main extends App {
   implicit val executionContext = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   class TwitterActor extends Actor {
 
-    //  TODO: replace!!
     val BrokerList: String = System.getenv("KAFKA_BROKERS")
     //  for test
 //    val BrokerList: String = "localhost:9092"
@@ -33,13 +33,13 @@ object Main extends App {
     val producer = new KafkaProducer[String, String](props)
 
     def receive = {
+
       case date: Date => {
         val twitter_data = twitter_data_preparation.getTweetByDate(date).getOrElse("")
-//        TwitterRecord
-        val prod_rec = new ProducerRecord[String, String](Topic, s"${date} - ${twitter_data}")
+        val prod_rec = new ProducerRecord[String, String](Topic, date.toString(), twitter_data)
 
         producer.send(prod_rec)
-        println("message is sent")
+        logger.info(s"[$Topic] $date $twitter_data")
       }
     }
 
@@ -48,46 +48,41 @@ object Main extends App {
     }
   }
 
-//  for test
-//  def update_date() : Date = {
-//    get_start_date()
-//  }
-
-  def get_start_date(): Date = {
-    import java.text.SimpleDateFormat
-
-    val current_date = System.getenv("START_DATE")
-    val parser = new SimpleDateFormat("MM/dd/yyyy")
-    val date = parser.parse(current_date)
-
-    date
+  def get_start_date() : LocalDate = {
+    LocalDate.parse("2019-02-02")
   }
 
-  //  for test
-  def get_current_date() : Date = {
-    import java.text.SimpleDateFormat
-
-    val input = "Wed Feb 02 00:00:00 EET 2019"
-    val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
-    val date = parser.parse(input)
-
-    val formatter = new SimpleDateFormat("dd/MM/yyyy")
-    formatter.parse(formatter.format(date))
+  def get_end_date() : LocalDate = {
+    LocalDate.parse("2019-02-22")
   }
 
-  def get_yesterday_date(): Date = {
-    new Date( get_current_date().getTime() - 24*60*60*1000 )
-  }
 
   val twitterActor = system.actorOf(Props[TwitterActor], "twitter-actor")
 
-  println("twitter-actor")
-
 //TODO read from the confug file
-  val day_duration = 60
+  val day_duration = 20
 
-//  val current_date = get_start_date()
+  val start_date = get_start_date()
+  val end_date = get_end_date()
 
-  system.scheduler.schedule(Duration.Zero, day_duration seconds, twitterActor, get_yesterday_date())
+
+//  system.scheduler.schedule(Duration.Zero, day_duration.toInt seconds, twitterActor, get_current_date())
+
+  /**
+   * Generate an infinite stream of dates starting at `fromDate`.
+   */
+  def dates(fromDate: LocalDate): Stream[LocalDate] = {
+    fromDate #:: dates(fromDate plusDays 1 )
+  }
+
+  Thread.sleep(30000);
+  for (i<-dates(start_date).takeWhile(_.isBefore(end_date)).toList){
+    twitterActor ! java.util.Date.from(i.atStartOfDay()
+      .atZone(ZoneId.systemDefault())
+      .toInstant())
+
+    Thread.sleep(day_duration*1000);
+  }
+
 
 }
