@@ -5,7 +5,7 @@ set -x  # print all executed commands on terminal
 
 if [ -z "$1" ] || [ -z "$2" ]
 then
-    echo -e "\nPlease supply AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as arguments to this script\n"
+    echo -e "\nPlease supply AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_ACCOUNT_ID as arguments to this script\n"
     exit 1
 fi
 
@@ -13,6 +13,7 @@ export $(grep -v '^#' .env | xargs)
 
 AWS_ACCESS_KEY_ID=$1
 AWS_SECRET_ACCESS_KEY=$2
+AWS_ACCOUNT_ID=$3
 
 ecs-cli --version
 
@@ -25,5 +26,5 @@ aws configure set default.region us-east-1 || exit /b
 ecs-cli configure profile default --profile-name ucu-class
 
 # login to ecr registry
-$(aws ecr get-login --region us-east-1 --no-include-email)
+$(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com)
 

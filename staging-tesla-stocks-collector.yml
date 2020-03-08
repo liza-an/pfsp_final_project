@@ -1,7 +1,7 @@
 version: '2'
 services:
   solar-panel-app:
-    image: $REGISTRY_URI/ucu-class/solar-panel-emulator:$STUDENT_NAME-0.1
+    image: $REGISTRY_URI/ucu-class/tesla-stocks-collector:$STUDENT_NAME-0.1
     environment:
       - KAFKA_BROKERS=$KAFKA_BROKERS # workaround ecs env limitation
     logging:

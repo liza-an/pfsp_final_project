@@ -8,10 +8,12 @@ for /f "delims== tokens=1,2" %%G in (.env) do set %%G=%%H
 set SERVICE_NAME=%1
 
 if /I not "%SERVICE_NAME%"=="streaming-app" (
-   if /I not "%SERVICE_NAME%"=="weather-provider" (
-      if /I not "%SERVICE_NAME%"=="solar-panel-emulator" (
-         echo "should supply name of the service [streaming-app|weather-provider|solar-panel-emulator]"
-         exit /B 1
+   if /I not "%SERVICE_NAME%"=="news-collector" (
+      if /I not "%SERVICE_NAME%"=="tesla-stocks-collector" (
+          if /I not "%SERVICE_NAME%"=="musk-tweets-collector" (
+             echo "should supply name of the service [streaming-app|news-collector|tesla-stocks-collector|musk-tweets-collector]"
+             exit /B 1
+          )
       )
    )
 )

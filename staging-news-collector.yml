@@ -1,7 +1,7 @@
 version: '2'
 services:
   weather-provider:
-    image: $REGISTRY_URI/ucu-class/weather-provider:$STUDENT_NAME-0.1
+    image: $REGISTRY_URI/ucu-class/news-collector:$STUDENT_NAME-0.1
     environment:
       - KAFKA_BROKERS=$KAFKA_BROKERS # workaround ecs env limitation
     logging:

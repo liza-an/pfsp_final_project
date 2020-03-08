@@ -6,10 +6,9 @@ set -x  # print all executed commands on terminal
 export $(grep -v '^#' .env | xargs)
 
 SERVICE_NAME=$1
-
-if [ "$SERVICE_NAME" != "streaming-app" ] && [ "$SERVICE_NAME" != "weather-provider" ] && [ "$SERVICE_NAME" != "solar-panel-emulator" ]
+if [ "$SERVICE_NAME" != "news-collector" ] && [ "$SERVICE_NAME" != "tesla-stocks-collector" ] && [ "$SERVICE_NAME" != "musk-tweets-collector" ]&& [ "$SERVICE_NAME" != "streaming-app" ]
 then
-        echo "should supply name of the service [streaming-app|weather-provider|solar-panel-emulator]";
+        echo "should supply name of the service [streaming-app|news-collector|tesla-stocks-collector|musk-tweets-collector]";
         exit 1;
 fi
 
