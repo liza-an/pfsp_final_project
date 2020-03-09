@@ -1,5 +1,6 @@
 package ua.ucu.edu
 
+import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.{LocalDate, ZoneId}
 import java.util.{Date, Properties}
@@ -7,21 +8,17 @@ import java.util.{Date, Properties}
 import akka.actor.{Actor, Props}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
-
 import scala.concurrent.duration._
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-
 import akka.stream.ActorMaterializer
-
 import play.api.libs.json._
-
 import java.text.SimpleDateFormat
-import org.slf4j.{Logger, LoggerFactory}
 
+import org.slf4j.{Logger, LoggerFactory}
 import com.typesafe.config.ConfigFactory
 
 object Main extends App {
@@ -32,6 +29,8 @@ object Main extends App {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
+  val config = ConfigFactory.parseFile(new File("/project/application.conf"))
+
   object Config {
     val KafkaBrokers = "KAFKA_BROKERS"
   }
@@ -40,7 +39,6 @@ object Main extends App {
 
       case class NewsRecord(created_at: Date, title: String)
 
-//      news created after date
   def getNewsByDate(date: Date): Future[HttpResponse] = {
 
     val formatter = new SimpleDateFormat("dd/MM/yyyy")
@@ -56,16 +54,13 @@ object Main extends App {
       def processNews(input_data: String): Seq[String] = {
         val json = Json.parse(input_data)
         val hits = json  \\ "title"
-        //          take every second element of hits
+        //          take every second element
         hits.zipWithIndex
           .filter { case (_, i) => (i + 1) % 2 != 1 }
           .map { case (e, _) => e.toString() }
       }
 
-      //  TODO: replace!!
-        val BrokerList: String = System.getenv(Config.KafkaBrokers)
-      //  for test
-//      val BrokerList: String = "localhost:9092"
+      val BrokerList: String = System.getenv(Config.KafkaBrokers)
       val Topic = "news-data"
       val props = new Properties()
       props.put("bootstrap.servers", BrokerList)
@@ -86,17 +81,9 @@ object Main extends App {
                 val data = new ProducerRecord[String, String](Topic, date.toString(), res_titles)
                 producer.send(data)
                 logger.info(s"[$Topic] $date $res_titles")
-
-//                res_titles.foreach(title => {
-//                  val data = new ProducerRecord[String, String](Topic, date.toString(), title)
-//                  producer.send(data)
-//                  logger.info(s"[$Topic] $date $title")
-//                })
               }
               case Failure(e) => println("something went wrong: " + e)
             }
-          //        .flatMap(_ => Http().shutdownAllConnectionPools())
-          //        .flatMap(_ => system.terminate())
         }
       }
 
@@ -105,23 +92,7 @@ object Main extends App {
       }
     }
 
-  //  for test
-  def get_current_date() : Date = {
-    import java.text.SimpleDateFormat
-
-    val input = "Wed Feb 02 00:00:00 EET 2019"
-    val parser = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy")
-    val date = parser.parse(input)
-
-    val formatter = new SimpleDateFormat("dd/MM/yyyy")
-    formatter.parse(formatter.format(date))
-  }
-
-  def get_yesterday_date(): Date = {
-    new Date( get_current_date().getTime() - 24*60*60*1000 )
-  }
-
-  val day_duration = ConfigFactory.load().getString("team.secret.day_duration").toInt
+  val day_duration = config.getInt("simulation.day_duration.value")
 
   val newsActor = system.actorOf(Props[NewsActor], "news-actor")
 
@@ -130,12 +101,12 @@ object Main extends App {
   }
 
   def get_start_date() : LocalDate = {
-    val start_date = ConfigFactory.load().getString("team.secret.start_date")
+    val start_date = config.getString("simulation.start_date.value")
     LocalDate.parse(start_date)
   }
 
   def get_end_date() : LocalDate = {
-    val start_date = ConfigFactory.load().getString("team.secret.end_date")
+    val start_date = config.getString("simulation.end_date.value")
     LocalDate.parse(start_date)
   }
 

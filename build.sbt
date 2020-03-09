@@ -50,10 +50,12 @@ def dockerSettings(debugPort: Option[Int] = None) = Seq(
     val artifactTargetPath = s"/project/${artifactSource.name}"
     val scriptSourceDir = baseDirectory.value / "../scripts"
     val projectDir = "/project/"
+    val conFile = baseDirectory.value / "../application.conf"
     new Dockerfile {
       from("anapsix/alpine-java:latest")
       add(artifactSource, artifactTargetPath)
       copy(scriptSourceDir, projectDir)
+      copy(conFile, projectDir)
       run("chmod", "+x", s"/project/start.sh")
       entryPoint(s"/project/start.sh")
       cmd(projectDir, s"${name.value}", s"${version.value}")
@@ -120,8 +122,20 @@ lazy val streaming_app = (project in file("streaming-app"))
   .enablePlugins(sbtdocker.DockerPlugin)
   .settings(
     name := "streaming-app",
-    libraryDependencies ++= commonDependencies ++ streamsDependencies ++ Seq(
+    libraryDependencies ++= commonDependencies ++ streamsDependencies ++ akkaDependencies ++ Seq(
+      "com.typesafe.play" %% "play-json" % "2.8.0"
     ),
+    assemblyMergeStrategy in assembly := {
+      case x if x.endsWith("module-info.class")  => MergeStrategy.discard
+      case PathList("META-INF", xs @ _*) =>
+        (xs map {_.toLowerCase}) match {
+          case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) => MergeStrategy.discard
+          case _ => MergeStrategy.last
+        }
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+    },
     dockerSettings(),
-    //    mainClass in assembly := Some("ua.ucu.edu.DummyStreamingApp")
+    mainClass in assembly := Some("ua.ucu.edu.StreamingApp")
   )

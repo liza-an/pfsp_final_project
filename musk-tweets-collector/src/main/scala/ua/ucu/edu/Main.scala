@@ -1,6 +1,6 @@
 package ua.ucu.edu
 
-
+import java.io.File
 import java.util.{Date, Properties}
 
 import akka.actor.{Actor, Props}
@@ -20,11 +20,11 @@ object Main extends App {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
+  val config = ConfigFactory.parseFile(new File("/project/application.conf"))
+
   class TwitterActor extends Actor {
 
     val BrokerList: String = System.getenv("KAFKA_BROKERS")
-    //  for test
-//    val BrokerList: String = "localhost:9092"
     val Topic = "twitter-data"
     val props = new Properties()
     props.put("bootstrap.servers", BrokerList)
@@ -51,23 +51,21 @@ object Main extends App {
   }
 
   def get_start_date() : LocalDate = {
-    val start_date = ConfigFactory.load().getString("team.secret.start_date")
+    val start_date = config.getString("simulation.start_date.value")
     LocalDate.parse(start_date)
   }
 
   def get_end_date() : LocalDate = {
-    val start_date = ConfigFactory.load().getString("team.secret.end_date")
+    val start_date = config.getString("simulation.end_date.value")
     LocalDate.parse(start_date)
   }
 
-
   val twitterActor = system.actorOf(Props[TwitterActor], "twitter-actor")
 
-  val day_duration = ConfigFactory.load().getString("team.secret.day_duration").toInt
+  val day_duration = config.getInt("simulation.day_duration.value")
 
   val start_date = get_start_date()
   val end_date = get_end_date()
-
 
 //  system.scheduler.schedule(Duration.Zero, day_duration.toInt seconds, twitterActor, get_current_date())
 
@@ -86,6 +84,4 @@ object Main extends App {
 
     Thread.sleep(day_duration*1000);
   }
-
-
 }

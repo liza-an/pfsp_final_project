@@ -1,5 +1,6 @@
 package ua.ucu.edu
 
+import java.io.File
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
@@ -8,14 +9,15 @@ import org.apache.kafka.streams.scala.ImplicitConversions._
 import org.apache.kafka.streams.scala._
 import org.apache.kafka.streams.{KafkaStreams, StreamsConfig}
 import org.slf4j.LoggerFactory
+import com.typesafe.config.ConfigFactory
+import play.api.libs.json._
 
-object DummyStreamingApp extends App {
+object StreamingApp extends App {
 
   val logger = LoggerFactory.getLogger(getClass)
 
   val props = new Properties()
   props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streaming_app")
-//  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
   props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv(Config.KafkaBrokers))
 
   props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, Long.box(5 * 1000))
@@ -44,7 +46,7 @@ object DummyStreamingApp extends App {
     bag_of_words.toString()
   }
 
-  val window_time = 20000
+  val window_time = ConfigFactory.parseFile(new File("/project/application.conf")).getInt("simulation.day_duration.value")
 
 
   val resultStream = tweetsStream.join(newsStream)(
@@ -54,7 +56,7 @@ object DummyStreamingApp extends App {
     JoinWindows.of(window_time)
   ).join(stocksStream)(
     ((news_tweets, stock) => {
-      s"bag of words: $news_tweets; stock: $stock"
+      Json.toJson(Map("BOW_news_tweets" -> news_tweets, "stock" -> stock)).toString()
     }),
     JoinWindows.of(window_time)
   )
@@ -87,5 +89,4 @@ object DummyStreamingApp extends App {
   object Config {
     val KafkaBrokers = "KAFKA_BROKERS"
   }
-
 }

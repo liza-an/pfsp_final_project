@@ -25,15 +25,9 @@ object twitter_data_preparation {
                              time: String,
                              tweet: String)
 
-//    case class TwitterRecordProcessed(date: Date,
-//                                      time: String,
-//                                      tweet: String,
-//                                      bag_of_words: Map[String, Int])
-
     implicit val tweetFormat: RootJsonFormat[TwitterRecord] = jsonFormat3(TwitterRecord)
 
     val musk_twitter_records: List[TwitterRecord] = tweets_array.convertTo[List[TwitterRecord]]
-//    var musk_twitter_records_processed: List[TwitterRecordProcessed] = List()
     var musk_twitter_records_processed: Map[Date, String] = Map()
 
     for (twitter_record <- musk_twitter_records) {
@@ -41,20 +35,11 @@ object twitter_data_preparation {
 
         val date_changed_type = new SimpleDateFormat(dateFormat).parse(date_transformed)
         musk_twitter_records_processed += date_changed_type -> twitter_record.tweet
-//        val tweet_filtered = twitter_record.tweet
-//          .replaceAll("""[.!?\\/;,—\-_():]""", "")
-//
-//          .replaceAll("""(?m)\s+$""", "")
-//          .toLowerCase
-
-//        val words = tweet_filtered.split(" ")
-//        val bag_of_words = words.groupBy((word: String) => word).mapValues(_.length)
-
-//        musk_twitter_records_processed = musk_twitter_records_processed :+ TwitterRecordProcessed(date_changed_type, twitter_record.time, tweet_filtered, bag_of_words)
     }
 
     def getTweetByDate(date: Date): Option[String] = musk_twitter_records_processed.get(date)
 
+//    for test
 //    musk_twitter_records_processed.keys.foreach{
 //        date =>
 //        println(date)
@@ -64,5 +49,4 @@ object twitter_data_preparation {
 //                  getTweetByDate(date))
 //            )
 //    }
-
 }
