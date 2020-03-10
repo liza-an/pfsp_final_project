@@ -113,7 +113,6 @@ object Main extends App {
   val start_date = get_start_date()
   val end_date = get_end_date()
 
-  Thread.sleep(30000);
   for (i<-dates(start_date).takeWhile(_.isBefore(end_date)).toList){
     newsActor ! java.util.Date.from(i.atStartOfDay()
       .atZone(ZoneId.systemDefault())

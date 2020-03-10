@@ -27,8 +27,6 @@ object StreamingApp extends App {
 
   val builder = new StreamsBuilder
 
-  Thread.sleep(30000);
-
   val newsStream = builder.stream[String, String]("news-data")
   val tweetsStream = builder.stream[String, String]("twitter-data")
   val stocksStream = builder.stream[String, String]("stocks-data")
@@ -46,7 +44,7 @@ object StreamingApp extends App {
     bag_of_words.toString()
   }
 
-  val window_time = ConfigFactory.parseFile(new File("/project/application.conf")).getInt("simulation.day_duration.value")
+  val window_time = ConfigFactory.parseFile(new File("/project/application.conf")).getInt("simulation.day_duration.value") * 1000
 
 
   val resultStream = tweetsStream.join(newsStream)(
@@ -78,6 +76,7 @@ object StreamingApp extends App {
   stocksStream.foreach { (k, v) =>
     logger.info(s"STOCKS record processed $k->$v")
   }
+  
   val streams = new KafkaStreams(builder.build(), props)
   streams.cleanUp()
   streams.start()

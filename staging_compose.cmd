@@ -28,6 +28,33 @@ ecs-cli compose^
    --cluster-config ucu-class^
    --region us-east-1^
    --debug^
-   --file staging-%SERVICE_NAME%.yml^
-   --project-name %STUDENT_NAME%-%SERVICE_NAME%^
+   --file staging-musk-tweets-collector.yml^
+   --project-name %STUDENT_NAME%-musk-tweets-collector^
+   service %ALL_BUT_FIRST%
+
+@rem construct compose command
+ecs-cli compose^
+   --cluster-config ucu-class^
+   --region us-east-1^
+   --debug^
+   --file staging-news-collector.yml^
+   --project-name %STUDENT_NAME%-news-collector^
+   service %ALL_BUT_FIRST%
+
+@rem construct compose command
+ecs-cli compose^
+   --cluster-config ucu-class^
+   --region us-east-1^
+   --debug^
+   --file staging-tesla-stocks-collector.yml^
+   --project-name %STUDENT_NAME%-tesla-stocks-collector^
+   service %ALL_BUT_FIRST%
+
+@rem construct compose command
+ecs-cli compose^
+   --cluster-config ucu-class^
+   --region us-east-1^
+   --debug^
+   --file staging-streaming-app.yml^
+   --project-name %STUDENT_NAME%-streaming-app^
    service %ALL_BUT_FIRST%

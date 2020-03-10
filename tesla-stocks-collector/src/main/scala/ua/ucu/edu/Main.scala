@@ -69,7 +69,6 @@ object Main extends App {
 
   val day_duration = config.getInt("simulation.day_duration.value")
 
-  Thread.sleep(30000);
   for (i<-dates(start_date).takeWhile(_.isBefore(end_date)).toList){
     stocksActor ! java.util.Date.from(i.atStartOfDay()
       .atZone(ZoneId.systemDefault())

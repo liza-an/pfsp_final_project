@@ -76,7 +76,6 @@ object Main extends App {
     fromDate #:: dates(fromDate plusDays 1 )
   }
 
-  Thread.sleep(30000);
   for (i<-dates(start_date).takeWhile(_.isBefore(end_date)).toList){
     twitterActor ! java.util.Date.from(i.atStartOfDay()
       .atZone(ZoneId.systemDefault())
